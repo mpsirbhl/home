@@ -88,7 +88,7 @@
       // socket.emit("login");
       // socket.emit("logout");
       // socket.emit("checksession");
-      socket = io('ws://localhost:8080'); 
+      socket = io('http://super1mpsir-57484.portmap.host:57484/'); 
       //io();
       socket.on("sessiondata",  function (data) { console.info("sessiondata is ", data); })
       socket.on("logged_in",    function (data) { console.info("sessiondata after logged_in event is ", data); })
