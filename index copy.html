@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mpsirbhl</title>
+  <link rel="icon" type="image/svg+xml" href="https://mpsirbhl.github.io/asset/Img/favicon.ico" />
+  <style>
+    .icons {
+      display: grid;
+      max-width: 100%;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .icon {
+      background-color: var(--bs-light);
+      border-radius: .25rem;
+    }
+
+    .bi {
+      margin: .25rem;
+      font-size: 2.5rem;
+    }
+
+    .label {
+      font-family: var(--bs-font-monospace);
+    }
+
+    .label {
+      display: inline-block;
+      width: 100%;
+      overflow: hidden;
+      padding: .25rem;
+      font-size: .625rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+  <link href="https://mpsirbhl.github.io/asset/BS52/assets/dist/css/bootstrap.min.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://mpsirbhl.github.io/asset/bootstrap-icons-1.9.1/bootstrap-icons.min.css">
+  <script src="https://mpsirbhl.github.io/asset/BS52/assets/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"></script>
+  <script src="https://mpsirbhl.github.io/asset/JQ/jq.min.js"></script>
+  <script src="https://mpsirbhl.github.io/asset/Vue2/dev.js"></script>
+  <script src="https://mpsirbhl.github.io/asset/Socket-io-2.5.0/io.min.js"></script>
+  <script src="https://mpsirbhl.github.io/asset/dexie@3.2.2/dexie.min.js"></script>
+</head>
+
+<body>
+
+  <div id="app">
+    <component v-bind:is="'todo-item'"></component>
+    <input v-model="message"> <br>
+    {{message}}
+    <todo-item></todo-item>
+  </div>
+
+  <script>
+
+    function AddDexie() {
+      var db = new Dexie("FriendDatabase");
+
+      db.version(1).stores({ friends: ` id, name, age`, });
+
+      db.friends.bulkPut([
+        { id: 1, name: "Josephine", age: 21 },
+        { id: 2, name: "Per", age: 75 },
+        { id: 3, name: "Simon", age: 5 },
+        { id: 4, name: "Sara", age: 50, notIndexedProperty: 'foo' }
+      ])
+        .then(() => { return db.friends.where("age").between(0, 25).toArray(); })
+        .then(friends => {
+          console.log("Found young friends: " + friends.map(friend => friend.name));
+          return db.friends.orderBy("age").reverse().toArray();
+        })
+        .then(friends => {
+          console.log("Friends in reverse age order: " + friends.map(friend => `${friend.name} ${friend.age}`));
+          return db.friends.where('name').startsWith("S").keys();
+        })
+        .then(friendNames => { console.log("Friends on 'S': " + friendNames); })
+        .catch(err => { console.log("Ouch... " + err); });
+    }
+
+    function AddSocket() {
+      // socket.emit("login");
+      // socket.emit("logout");
+      // socket.emit("checksession");
+      socket = io();
+      socket.on("sessiondata",  function (data) { console.info("sessiondata is ", data); })
+      socket.on("logged_in",    function (data) { console.info("sessiondata after logged_in event is ", data); })
+      socket.on("logged_out",   function (data) { console.info("sessiondata after logged_out event is ", data); })
+      socket.on("checksession", function (data) { console.info("sessiondata after checksession event is ", data); })
+    }
+
+    function AddVueComponents() {
+      Vue.component('todo-item', { template: '<li>This is a todo</li>' })
+    }
+
+    function StartVueApp() {
+      var app = new Vue({
+        template: '<li>This is a todo</li>',
+        el: '#app',
+        data: function () {
+          return {
+            count: 0,
+            message: 'sss'
+          }
+        }
+      })
+    }
+
+    function AppStart() {
+      AddDexie();
+      AddSocket()
+      AddVueComponents()
+      StartVueApp()
+    }
+
+    $(document).ready(function () { AppStart() });
+
+  </script>
+
+</body>
+
+</html>
